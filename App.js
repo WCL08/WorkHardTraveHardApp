@@ -8,32 +8,41 @@ import {
 } from 'react-native';
 import { theme } from './colors';
 import { useEffect, useState } from 'react';
-import { ScrollView } from 'react-native-web';
+import { ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const STORAGE_KEY= "@toDos"
+const STORAGE_KEY = "@toDos"
 
 export default function App() {
 
   const [working, setWorking] = useState(true)
   const [text, setText] = useState("")
   const [toDos, setTodos] = useState({})
-  useEffect(()=>{
+  useEffect(() => {
     loadToDos();
-  },[])
+  }, [])
 
   const travel = () => setWorking(false)
   const work = () => setWorking(true)
   const onChangeText = (payload) => setText(payload)
 
-  const saveToDos = async(toSave) =>{
-   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
+  const saveToDos = async (toSave) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
+    } catch (error) {
+      console.log("saveError = ", error)
+    }
   }
-const loadToDos = async()=>{
-  const s = await AsyncStorage.getItem(STORAGE_KEY)
-  setTodos(JSON.parse(s))
-}
-  const addToDo = async() => {
+  const loadToDos = async () => {
+    try {
+      const s = await AsyncStorage.getItem(STORAGE_KEY)
+      setTodos(s ? JSON.parse(s) : {});
+      }catch(error){
+    console.log("loadError = ", error)
+
+  }
+  }
+  const addToDo = async () => {
     if (text === "") {
       return
     }
@@ -67,11 +76,11 @@ const loadToDos = async()=>{
       <ScrollView>
         {Object.keys(toDos).map(key => (
           toDos[key].working === working ?
-        <View style={styles.toDo} key={key}>
-          <Text style={styles.toDoText}>
-              {toDos[key].text}
-          </Text>
-        </View>:null))}
+            <View style={styles.toDo} key={key}>
+              <Text style={styles.toDoText}>
+                {toDos[key].text}
+              </Text>
+            </View> : null))}
       </ScrollView>
 
       <StatusBar style="auto" />
@@ -103,16 +112,16 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     fontSize: 18
   },
-  toDo:{
-    backgroundColor:theme.grey,
-    marginBottom:10,
-    paddingVertical:20,
-    paddingHorizontal:20,
-    borderRadius:15
+  toDo: {
+    backgroundColor: theme.grey,
+    marginBottom: 10,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderRadius: 15
   },
-  toDoText:{
-    color:"white",
-    fontSize:16,
-    fontWeight:"500"
+  toDoText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "500"
   }
 });
