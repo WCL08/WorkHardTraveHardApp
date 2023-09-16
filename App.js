@@ -5,11 +5,13 @@ import {
   View,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from 'react-native';
 import { theme } from './colors';
 import { useEffect, useState } from 'react';
 import { ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Fontisto } from '@expo/vector-icons';
 
 const STORAGE_KEY = "@toDos"
 
@@ -25,7 +27,7 @@ export default function App() {
   const travel = () => setWorking(false)
   const work = () => setWorking(true)
   const onChangeText = (payload) => setText(payload)
-
+  // 저장하기
   const saveToDos = async (toSave) => {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
@@ -33,15 +35,17 @@ export default function App() {
       console.log("saveError = ", error)
     }
   }
+  // 데이터 받기
   const loadToDos = async () => {
     try {
       const s = await AsyncStorage.getItem(STORAGE_KEY)
       setTodos(s ? JSON.parse(s) : {});
-      }catch(error){
-    console.log("loadError = ", error)
+    } catch (error) {
+      console.log("loadError = ", error)
 
+    }
   }
-  }
+  // 만들기
   const addToDo = async () => {
     if (text === "") {
       return
@@ -53,39 +57,61 @@ export default function App() {
     await saveToDos(newTodos)
     setText("")
   }
+  // 삭제하기
+  const deleteToDo = async (key) => {
+    Alert.alert(
+      "Delete To Do?",
+      "Are you sure?", [
+      { text: "Cancel" },
+      {
+        text: "Sure",
+        style:"destructive",
+        onPress: async() => {
+    const newTodos = { ...toDos }
+    delete newTodos[key]
+    setTodos(newTodos)
+    await saveToDos(newTodos)
+  }
+}
+    ]
+    )
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={work}>
-          <Text style={{ ...styles.btnText, color: working ? "white" : theme.grey }}>Work</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={travel}>
-          <Text style={{ ...styles.btnText, color: !working ? "white" : theme.grey }}>Travel</Text>
-        </TouchableOpacity>
-      </View>
-      <TextInput
-        // keyboardType='number-pad'
-        returnKeyType='done' // 리턴 버튼
-        onSubmitEditing={addToDo} // 인풋 값 
-        onChangeText={onChangeText} // 인풋값 상태 저장
-        value={text}
-        placeholder={working ? "Add a to do" : "Where do you want to go?"}
-        style={styles.input}>
-      </TextInput>
-      <ScrollView>
-        {Object.keys(toDos).map(key => (
-          toDos[key].working === working ?
-            <View style={styles.toDo} key={key}>
-              <Text style={styles.toDoText}>
-                {toDos[key].text}
-              </Text>
-            </View> : null))}
-      </ScrollView>
-
-      <StatusBar style="auto" />
+  }
+return (
+  <View style={styles.container}>
+    <View style={styles.header}>
+      <TouchableOpacity onPress={work}>
+        <Text style={{ ...styles.btnText, color: working ? "white" : theme.grey }}>Work</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={travel}>
+        <Text style={{ ...styles.btnText, color: !working ? "white" : theme.grey }}>Travel</Text>
+      </TouchableOpacity>
     </View>
-  );
+    <TextInput
+      // keyboardType='number-pad'
+      returnKeyType='done' // 리턴 버튼
+      onSubmitEditing={addToDo} // 인풋 값 
+      onChangeText={onChangeText} // 인풋값 상태 저장
+      value={text}
+      placeholder={working ? "Add a to do" : "Where do you want to go?"}
+      style={styles.input}>
+    </TextInput>
+    <ScrollView>
+      {Object.keys(toDos).map(key => (
+        toDos[key].working === working ?
+          <View style={styles.toDo} key={key}>
+            <Text style={styles.toDoText}>
+              {toDos[key].text}
+            </Text>
+            <TouchableOpacity onPress={() => deleteToDo(key)}>
+            <Fontisto name="trash" size={18} color={theme.toDobg} />
+            </TouchableOpacity>
+          </View> : null))}
+    </ScrollView>
+
+    <StatusBar style="auto" />
+  </View>
+);
 }
 
 const styles = StyleSheet.create({
@@ -117,7 +143,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingVertical: 20,
     paddingHorizontal: 20,
-    borderRadius: 15
+    borderRadius: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
   },
   toDoText: {
     color: "white",
