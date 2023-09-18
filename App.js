@@ -227,12 +227,12 @@ const editToDo = async (key) => {
                   <Pressable
                     style={[styles.button, styles.buttonClose]}
                     onPress={() => setModalVisible(!modalVisible)}>
-                    <Text style={styles.textStyle}>취소</Text>
+                    <Text style={styles.textStyle}>Cancel</Text>
                   </Pressable>
                   <Pressable
                     style={[styles.button, styles.buttonClose]}
                     onPress={() => editToDo(selectedTodoKey)}>
-                    <Text style={styles.textStyle}>변경</Text>
+                    <Text style={styles.textStyle}>Edit</Text>
                   </Pressable>
                 </View>
               </View>
